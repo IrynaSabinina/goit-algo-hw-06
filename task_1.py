@@ -1,6 +1,7 @@
 """
-This module performs graph analysis using the networkx library.
-It creates and manipulates graphs for various use cases, including PageRank and shortest path algorithms.
+This module analyzes a transport network graph of major Ukrainian cities using NetworkX.
+It visualizes the network and calculates key metrics such as degree distribution, 
+shortest paths, and graph density.
 """
 
 import networkx as nx
@@ -41,6 +42,29 @@ plt.show()
 num_nodes = G.number_of_nodes()
 num_edges = G.number_of_edges()
 degree_sequence = [G.degree(n) for n in G.nodes()]
+
+# Додатковий аналіз характеристик графа
+avg_degree = sum(degree_sequence) / num_nodes
+density = nx.density(G)
+
+# Найкоротші шляхи між деякими містами
+shortest_paths = {}
+for city1 in cities:
+    for city2 in cities:
+        if city1 != city2:
+            shortest_paths[(city1, city2)] = nx.shortest_path_length(G, city1, city2, weight='weight')
+
+print(f"Кількість вершин: {num_nodes}")
+print(f"Кількість ребер: {num_edges}")
+print(f"Середній ступінь вершини: {avg_degree:.2f}")
+print(f"Щільність графа: {density:.4f}")
+print("Ступені вершин:", degree_sequence)
+
+# Вивід декількох прикладів найкоротших шляхів
+print("\nПриклади найкоротших шляхів за відстанню:")
+for (city1, city2), dist in list(shortest_paths.items())[:5]:  # Показати 5 прикладів
+    print(f"{city1} → {city2}: {dist} км")
+
 
 print(f"Кількість вершин: {num_nodes}")
 print(f"Кількість ребер: {num_edges}")
