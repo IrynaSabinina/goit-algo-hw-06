@@ -1,64 +1,77 @@
 """
-This module performs graph analysis using the networkx library.
-It creates and manipulates graphs for various use cases, including PageRank and shortest path algorithms.
+This module implements DFS and BFS algorithms for finding paths in a graph.
+It applies these algorithms to the transport network graph and compares their results.
 """
 
 import networkx as nx
 import matplotlib.pyplot as plt
+from collections import deque
 
-# Створюємо граф
+# Створюємо граф транспортної мережі (як у Task 1)
 G = nx.Graph()
 edges = [
-    ('A', 'B'), ('A', 'C'), ('B', 'D'), 
-    ('B', 'E'), ('C', 'F'), ('D', 'G'), 
-    ('E', 'H'), ('F', 'I')
+    ("Kyiv", "Lviv"), ("Kyiv", "Odesa"), ("Kyiv", "Kharkiv"), ("Kyiv", "Dnipro"),
+    ("Lviv", "Odesa"), ("Lviv", "Kharkiv"), ("Odesa", "Dnipro"), ("Kharkiv", "Dnipro")
 ]
 G.add_edges_from(edges)
 
 # Візуалізація графа
-nx.draw(G, with_labels=True, node_color='lightblue', node_size=800, font_size=10, font_color='black')
-plt.title("Граф")
+plt.figure(figsize=(6, 6))
+pos = nx.spring_layout(G)
+nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=10)
+plt.title("Transport Network Graph")
 plt.show()
 
-# Алгоритм DFS
+# Алгоритм DFS (Пошук у Глибину)
 def dfs(graph, start, goal):
-    stack = [(start, [start])]
+    stack = [(start, [start])]  # Стек для збереження поточного шляху
+    paths = []
+    
     while stack:
-        (vertex, path) = stack.pop()
-        for next in set(graph[vertex]) - set(path):
-            if next == goal:
-                yield path + [next]
+        vertex, path = stack.pop()
+        for neighbor in set(graph[vertex]) - set(path):  # Уникнення циклів
+            new_path = path + [neighbor]
+            if neighbor == goal:
+                paths.append(new_path)
             else:
-                stack.append((next, path + [next]))
+                stack.append((neighbor, new_path))
+    
+    return paths
 
-# Алгоритм BFS
+# Алгоритм BFS (Пошук у Ширину)
 def bfs(graph, start, goal):
-    queue = [(start, [start])]
+    queue = deque([(start, [start])])  # Використовуємо deque для оптимізації
+    paths = []
+    
     while queue:
-        (vertex, path) = queue.pop(0)
-        for next in set(graph[vertex]) - set(path):
-            if next == goal:
-                yield path + [next]
+        vertex, path = queue.popleft()
+        for neighbor in set(graph[vertex]) - set(path):  # Уникнення циклів
+            new_path = path + [neighbor]
+            if neighbor == goal:
+                paths.append(new_path)
             else:
-                queue.append((next, path + [next]))
+                queue.append((neighbor, new_path))
+    
+    return paths
 
-# Виконання алгоритмів
-start_node = 'A'
-goal_node = 'H'
+# Вибір стартової та цільової вершини
+start_node = "Kyiv"
+goal_node = "Dnipro"
 
-dfs_paths = list(dfs(G, start_node, goal_node))
-bfs_paths = list(bfs(G, start_node, goal_node))
+# Виконання DFS та BFS
+dfs_paths = dfs(G, start_node, goal_node)
+bfs_paths = bfs(G, start_node, goal_node)
 
 # Вивід результатів
-print("Шляхи, знайдені за допомогою DFS:")
+print(f"🔍 DFS-шляхи від {start_node} до {goal_node}:")
 for path in dfs_paths:
-    print(path)
+    print(" → ".join(path))
 
-print("\nШляхи, знайдені за допомогою BFS:")
+print(f"\n🔍 BFS-шляхи від {start_node} до {goal_node}:")
 for path in bfs_paths:
-    print(path)
+    print(" → ".join(path))
 
-# Пояснення
-print("\nПояснення:")
-print("DFS (пошук в глибину) зазвичай знаходить шлях, проходячи до найглибших вузлів перед поверненням. Це може призводити до довгих шляхів.")
-print("BFS (пошук в ширину) знаходить найкоротший шлях в термінах кількості ребер, оскільки досліджує всі сусіди на поточному рівні перед переходом на наступний.")
+# Пояснення різниці між DFS та BFS
+print("\n📌 Порівняння DFS і BFS:")
+print("✔ DFS (пошук у глибину) рухається вниз по одній гілці графа до кінця, перш ніж повертатися назад.")
+print("✔ BFS (пошук у ширину) проходить всі сусідні вершини перш, ніж заглиблюватись, тому завжди знаходить найкоротший шлях за кількістю кроків.")
